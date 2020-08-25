@@ -1,0 +1,135 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhận diện biển số xe</title>
+    <link href="/css/bootstrap.css" rel="stylesheet">
+    <script src="/js/jquery.js"></script>
+    <script src="/js/bootstrap.js"></script>
+</head>
+
+<body onload="init()">
+    <!-- Begin nav-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-xl">
+            <a class="navbar-brand" href="/">THỊ GIÁC MÁY TÍNH</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExample07XL" aria-controls="navbarsExample07XL" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarsExample07XL">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item ">
+                        <a class="nav-link" href="./home.html">Đề bài</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="./yolo-model.html">Nhận diện biển số xe</a>
+                    </li>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./report.html">Báo cáo</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- End nav-->
+    <div class="container">
+        <div style="margin: 1rem 0rem; text-align: center;">
+            <h2>NHẬN DIỆN BIỂN SỐ XE DÂN SỰ VIỆT NAM</h2>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h4 style="text-align: center">DỮ LIỆU ĐẦU VÀO</h4>
+                <div class="text-center">
+                    <img id="upload_img" src="#" alt="your image" class="img-fluid m-2" />
+                </div>
+                <div class="row d-flex justify-content-center">
+                    <input id="upload" class="btn btn-outline-dark mr-1" type="file" onchange="readURL(this);" name="image" accept="image/gif, image/jpeg, image/png">
+                    <button id="detect" type="button" class="btn btn-outline-dark mr-1" onclick="getDetectedImg()">Detect</button>
+                    <button id="reset" class="btn btn-outline-danger float-right mr-1" onclick="reset()">Reset</button>
+                </div>
+            </div>
+            <div class="col">
+                <h4 style="text-align: center">DỮ LIỆU KẾT QUẢ</h4>
+                <div class="text-center">
+                    <img id="output_img" class="img-fluid m-2" />
+                </div>
+                <h2 id="res" style="text-align: center" style="margin: 1rem 0rem">
+                </h2>
+            </div>
+        </div>
+
+    </div>
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1">&copy; 1712330 Nguyễn Doãn Tiến Đạt - 1712660 Trương Hoài Phong</p>
+    </footer>
+</body>
+<script src="../js/utils.js"></script>
+<script>
+    /**
+     * Hàm khởi tạo trước khi load trang
+     */
+    function init() {
+        document.getElementById("upload_img").src = "../assets/img/default_image.jpg"
+        document.getElementById("output_img").src = "../assets/img/default_image.jpg"
+
+        document.getElementById("detect").disabled = true
+    }
+    // Biến obj chứa data theo form để gửi về server
+    let obj;
+    /**
+     * Hàm đọc ảnh và lưu form data vào obj
+     */
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            var base64str = ""
+            reader.onload = function(e) {
+                $('#upload_img').attr('src', e.target.result)
+                base64str = e.target.result; // Gán giá trị base64 của ảnh input
+                obj = new FormData() // Khởi tạo obj
+                obj.append("image", input.files[0])
+                obj.append("filename", input.files[0].name)
+            };
+            document.getElementById("detect").disabled = false
+            document.getElementById("upload_img").hidden = false
+
+            reader.readAsDataURL(input.files[0]);
+            inp = input.files[0];
+        }
+    }
+    /**
+     * Hàm detect (gửi yêu cầu về server và hiển thị ảnh kết quả)
+     */
+    function getDetectedImg() {
+        // 
+        res = VNLPRecognize(obj)
+
+        license_number = JSON.parse(res).license_plate
+
+        // Hiển thị ảnh
+        base64ToImage(JSON.parse(res).image)
+        document.getElementById("res").innerHTML = license_number
+    }
+    /**
+     * Hàm chuyển từ base64 sang ảnh để hiển thị vào thẻ img output_img
+     */
+    function base64ToImage(base64_string) {
+        src = "data:image/png;base64," + base64_string;
+        document.getElementById('output_img').src = src;
+    }
+    /**
+     * Hàm reset trạng thái ban đầu
+     */
+    function reset() {
+        document.getElementById("upload").value = ""
+        document.getElementById("upload_img").src = "../assets/img/default_image.jpg"
+        document.getElementById("output_img").src = "../assets/img/default_image.jpg"
+
+        document.getElementById("detect").disabled = true
+    }
+</script>
+
+</html>
